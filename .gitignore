@@ -1,0 +1,7 @@
+__pycache__/
+*.csv
+*.png
+Runtime_plotting.ipynb
+Untitled.ipynb
+.DS_Store
+.ipynb_checkpoints/
