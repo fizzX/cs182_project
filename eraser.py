@@ -57,7 +57,7 @@ class Eraser:
                             (1 - self.a[t]) * self.Z
 
 
-            # constain 4
+            # Constraint 4
             self.prob += self.k - (self.C[t] * self.attacker_covered[t] +
                             (1 - self.C[t]) * self.attacker_uncovered[t]) <=  \
                             (1 - self.a[t]) * self.Z
