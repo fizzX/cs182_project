@@ -22,6 +22,9 @@ def get_election_results(election_year):
 
 
 def att_reward(state, election_results, electoral_votes):
+    """
+    Non-partisan attacker, positive reward (for PH)
+    """
     evotes = int(electoral_votes[electoral_votes['state'] == state].evotes)
     dem_votes = int(election_results[(election_results['state'] == state) & (
         election_results['party'] == 'democrat')].votes)
@@ -34,11 +37,17 @@ def att_reward(state, election_results, electoral_votes):
 
 
 def partisan_att_reward(state, election_results, electoral_votes):
+    """
+    Partisan attacker, positive reward (for DH and RH)
+    """
     evotes = int(electoral_votes[electoral_votes['state'] == state].evotes)
     return evotes
 
 
 def att_pos_reward(state, election_results, electoral_votes, attack_list, partisan = False):
+    """
+    Decide which positive reward an attacker should receive
+    """
     if state in attack_list:
         if partisan:
             return partisan_att_reward(state, election_results, electoral_votes)
@@ -49,20 +58,32 @@ def att_pos_reward(state, election_results, electoral_votes, attack_list, partis
 
 
 def att_neg_reward(state, election_results, electoral_votes, attack_list):
-    return 0
+    """
+    All attackers' negative reward
+    """
+    return -528/51
 
 
 def def_pos_reward(state, election_results, electoral_votes):
+    """
+    Defender's positive reward
+    """
     multiplier = 1.5
     return multiplier * att_reward(state, election_results, electoral_votes)
 
 
 def def_neg_reward(state, election_results, electoral_votes):
+    """
+    Defender's negative reward
+    """
     multiplier = 1.5
     return -1 * multiplier * att_reward(state, election_results, electoral_votes)
 
 
 def get_rep_states(election_results, state_list):
+    """
+    Get all states from a given election year that leaned republican
+    """
     rep_state_list = []
     for state in state_list:
         dem_votes = int(election_results[(election_results['state'] == state) & (
@@ -75,6 +96,9 @@ def get_rep_states(election_results, state_list):
 
 
 def get_dem_states(election_results, state_list):
+    """
+    Get all states from a given election year that leaned democrat
+    """
     dem_state_list = []
     for state in state_list:
         dem_votes = int(election_results[(election_results['state'] == state) & (
@@ -124,11 +148,9 @@ def get_reward_matrices(election_results, state_list, attack_list, electoral_vot
 
 class ElectionGame:
     """
-    A security game is a non-bayesian game in which the payoffs for targets
-    are given by their coverage status.
-    Covered targets yield higher utilities for the defender, and lower
-    utilities for the attacker, whilst uncovered targets yield negative
-    utilities for the defender and positive utilities for the attacker.
+    Covered targets yield higher rewards for the defender, and lower
+    rewards for the attacker, whilst uncovered targets yield negative
+    rewards for the defender and positive rewards for the attacker.
     """
 
     def __init__(self, **kwargs):
