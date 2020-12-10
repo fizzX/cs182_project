@@ -35,10 +35,17 @@ def att_reward(state, election_results, electoral_votes):
 
 def partisan_att_reward(state, election_results, electoral_votes):
     evotes = int(electoral_votes[electoral_votes['state'] == state].evotes)
-    return evotes
+    dem_votes = int(election_results[(election_results['state'] == state) & (
+        election_results['party'] == 'democrat')].votes)
+    rep_votes = int(election_results[(election_results['state'] == state) & (
+        election_results['party'] == 'republican')].votes)
+    total_votes = dem_votes + rep_votes
+    margin = (max(dem_votes, rep_votes) -
+              min(dem_votes, rep_votes))/total_votes
+    return evotes/(1+margin)
 
 
-def att_pos_reward(state, election_results, electoral_votes, attack_list, partisan = False):
+def att_pos_reward(state, election_results, electoral_votes, attack_list, partisan):
     if state in attack_list:
         if partisan:
             return partisan_att_reward(state, election_results, electoral_votes)
@@ -49,18 +56,21 @@ def att_pos_reward(state, election_results, electoral_votes, attack_list, partis
 
 
 def att_neg_reward(state, election_results, electoral_votes, attack_list):
-    return 0
+    return -538/51
 
 
-def def_pos_reward(state, election_results, electoral_votes):
-    multiplier = 1.5
-    return multiplier * att_reward(state, election_results, electoral_votes)
+def def_pos_reward(state, election_results, electoral_votes, attack_list):
+    if state in attack_list:
+        return int(electoral_votes[electoral_votes['state'] == state].evotes)
+    else:
+        return 0
 
 
-def def_neg_reward(state, election_results, electoral_votes):
-    multiplier = 1.5
-    return -1 * multiplier * att_reward(state, election_results, electoral_votes)
-
+def def_neg_reward(state, election_results, electoral_votes, attack_list):
+    if state in attack_list:
+        return -1*int(electoral_votes[electoral_votes['state'] == state].evotes)
+    else:
+        return 0
 
 def get_rep_states(election_results, state_list):
     rep_state_list = []
@@ -106,10 +116,10 @@ def get_reward_matrices(election_results, state_list, attack_list, electoral_vot
                 state, election_results, electoral_votes, attack_list[i]))
 
             def_pos_list.append(def_pos_reward(
-                state, election_results, electoral_votes))
+                state, election_results, electoral_votes, attack_list[i]))
 
             def_neg_list.append(def_neg_reward(
-                state, election_results, electoral_votes))
+                state, election_results, electoral_votes, attack_list[i]))
 
         att_pos_array = np.vstack((att_pos_array, att_pos_list))
         att_neg_array = np.vstack((att_neg_array, att_neg_list))
