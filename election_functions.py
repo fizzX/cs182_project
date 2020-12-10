@@ -68,7 +68,7 @@ def att_neg_reward(state, election_results, electoral_votes, attack_list):
     """
     All attackers' negative reward
     """
-    return -528/51
+    return -538/51
 
 def def_pos_reward(state, election_results, electoral_votes, attack_list):
     """
